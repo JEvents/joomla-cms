@@ -3,7 +3,7 @@
  * @package     Joomla.Platform
  * @subpackage  Form
  *
- * @copyright   Copyright (C) 2005 - 2017 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2018 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -13,7 +13,7 @@ defined('JPATH_PLATFORM') or die;
  * Form Field class for the Joomla Platform.
  * Supports a generic list of options.
  *
- * @since  11.1
+ * @since  1.7.0
  */
 class JFormFieldList extends JFormField
 {
@@ -21,7 +21,7 @@ class JFormFieldList extends JFormField
 	 * The form field type.
 	 *
 	 * @var    string
-	 * @since  11.1
+	 * @since  1.7.0
 	 */
 	protected $type = 'List';
 
@@ -81,7 +81,7 @@ class JFormFieldList extends JFormField
 			}
 		}
 		else
-		// Create a regular list.
+		// Create a regular list passing the arguments in an array.
 		{
 			$listoptions = array();
 			$listoptions['option.key'] = 'value';
@@ -126,6 +126,18 @@ class JFormFieldList extends JFormField
 				{
 					continue;
 				}
+
+				// Requires adminlanguage
+				if (in_array('adminlanguage', $requires) && !JModuleHelper::isAdminMultilang())
+				{
+					continue;
+				}
+
+				// Requires vote plugin
+				if (in_array('vote', $requires) && !JPluginHelper::isEnabled('content', 'vote'))
+				{
+					continue;
+				}
 			}
 
 			$value = (string) $option['value'];
@@ -153,9 +165,14 @@ class JFormFieldList extends JFormField
 			// Set some event handler attributes. But really, should be using unobtrusive js.
 			$tmp['onclick']  = (string) $option['onclick'];
 			$tmp['onchange'] = (string) $option['onchange'];
-			
-			if ((string) $option['showon']){
-				$tmp['optionattr']   = " data-showon = '".json_encode(JFormHelper::parseShowOnConditions((string) $option['showon'], $this->formControl, $this->group))."'";
+
+			if ((string) $option['showon'])
+			{
+				$tmp['optionattr'] = " data-showon='" .
+					json_encode(
+						JFormHelper::parseShowOnConditions((string) $option['showon'], $this->formControl, $this->group)
+						)
+					. "'";
 			}
 			// Add the option object to the result set.
 			$options[] = (object) $tmp;
@@ -244,7 +261,7 @@ class JFormFieldList extends JFormField
 	/**
 	 * Method to get certain otherwise inaccessible properties from the form field object.
 	 *
-	 * @param   string  $name  The property name for which to the the value.
+	 * @param   string  $name  The property name for which to get the value.
 	 *
 	 * @return  mixed  The property value or null.
 	 *
